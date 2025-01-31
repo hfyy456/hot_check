@@ -6,3 +6,4 @@ export const REGISTER_URL = `${BASE_URL}/register`;
 export const HOME_DATA_URL = `${BASE_URL}/home-data`;
 // 新增获取七牛云token的接口地址
 export const QINIU_TOKEN_URL = `${BASE_URL}/qiniu/token`;
+export const IMAGE_ADD_URL = `${BASE_URL}/image/add`;

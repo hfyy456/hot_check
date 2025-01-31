@@ -1,22 +1,16 @@
 // src/api/uploadApi.js
-import { getQiniuToken } from "./qiniuTokenApi";
+import { IMAGE_ADD_URL } from "./apiUrls";
 
-export const uploadPhoto = async (file) => {
+
+// 新增 addImage 函数，用于发送图片信息到 image/add 接口
+export const addImage = async (name, url, from) => {
   try {
-    // 获取七牛云token
-    const token = await getQiniuToken();
-
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_token", token);
-    formData.append("key", file.name); // 使用文件名作为 key
-
-    // 七牛云上传接口地址，这里假设是七牛云的默认上传地址
-    const qiniuUploadUrl = "http://up-z1.qiniup.com";
-
-    const response = await fetch(qiniuUploadUrl, {
+    const response = await fetch(IMAGE_ADD_URL, {
       method: "POST",
-      body: formData,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name, url, from }),
     });
 
     if (!response.ok) {
@@ -26,7 +20,7 @@ export const uploadPhoto = async (file) => {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("上传照片到七牛云时出错:", error);
+    console.error("添加图片信息时出错:", error);
     throw error;
   }
 };

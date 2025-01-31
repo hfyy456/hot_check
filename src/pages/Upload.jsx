@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Typography, Button, Box } from "@mui/material";
 import { qiniuTokenApi } from "../api/qiniuTokenApi";
 import * as qiniu from "qiniu-js"; // 引入七牛云 SDK
+import { addImage } from "../api/uploadApi";
 
 const Upload = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -52,9 +53,21 @@ const Upload = () => {
             setUploadError(err.message);
             setIsUploading(false);
           },
-          complete(res) {
+          async complete(res) {
             // 上传完成处理
             console.log("上传成功，响应结果:", res);
+            // 假设上传成功后，result 中包含图片的 URL
+            const imageUrl = "https://qiniuyun.hfsblog.com/" + res.key;
+            const imageName = selectedFile.name;
+            const imageFrom = "user-upload";
+
+            // 调用 addImage 函数，将图片信息发送到 image/add 接口
+            const addImageResult = await addImage(
+              imageName,
+              imageUrl,
+              imageFrom
+            );
+            console.log("添加图片信息成功，响应结果:", addImageResult);
             setUploadSuccess(true);
             setSelectedFile(null);
             setIsUploading(false);
