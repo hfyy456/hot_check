@@ -1,7 +1,8 @@
-// src/UploadPage.jsx
+// src/pages/Upload.jsx
 import React, { useState } from "react";
 import { Typography, Button, Box } from "@mui/material";
-import { uploadPhoto } from "../api/uploadApi";
+import { qiniuTokenApi } from "../api/qiniuTokenApi";
+import * as qiniu from "qiniu-js"; // 引入七牛云 SDK
 
 const Upload = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -22,13 +23,46 @@ const Upload = () => {
     if (selectedFile) {
       setIsUploading(true);
       try {
-        const result = await uploadPhoto(selectedFile);
-        console.log("上传成功，响应结果:", result);
-        setUploadSuccess(true);
-        setSelectedFile(null);
+        // 获取七牛云上传凭证
+        const data = await qiniuTokenApi();
+        // 配置上传参数
+        const key = new Date().getTime() + "_" + selectedFile.name; // 文件名
+        const putExtra = {
+          fname: selectedFile.name,
+          params: {},
+          mimeType: selectedFile.type,
+        };
+        const config = {};
+
+        // 开始上传
+        const observable = qiniu.upload(
+          selectedFile,
+          key,
+          data.token,
+          putExtra,
+          config
+        );
+        const subscriber = {
+          next(res) {
+            // 上传进度处理
+            console.log("上传进度:", res.total.percent);
+          },
+          error(err) {
+            // 上传错误处理
+            setUploadError(err.message);
+            setIsUploading(false);
+          },
+          complete(res) {
+            // 上传完成处理
+            console.log("上传成功，响应结果:", res);
+            setUploadSuccess(true);
+            setSelectedFile(null);
+            setIsUploading(false);
+          },
+        };
+        const subscription = observable.subscribe(subscriber);
       } catch (error) {
         setUploadError(error.message);
-      } finally {
         setIsUploading(false);
       }
     }
